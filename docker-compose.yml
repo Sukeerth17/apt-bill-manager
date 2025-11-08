@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  # 1. PostgreSQL Database Service (The Access Control & Data Store)
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: apt_bills
+    ports:
+      # Maps container port 5432 to host port 5433 to avoid the 'address already in use' error.
+      - "5433:5432"  
+    volumes:
+      # Persists the database data across container restarts
+      - postgres_data:/var/lib/postgresql/data/
+
+  # 2. FastAPI Backend Service (The Logic & API Layer)
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: apt_bill_api
+    restart: always
+    # Ensures the database is started before the API tries to connect
+    depends_on:
+      - db
+    # Loads all security, Telegram, and Email credentials
+    env_file:
+      - ./backend/.env 
+    ports:
+      # Maps the FastAPI server port 8000 to the host machine
+      - "8000:8000"
+    volumes:
+      # Mounts your local code for live reloading and development
+      - ./backend:/app 
+      # Mounts a temporary directory for safe handling of uploaded Excel files
+      - /tmp:/tmp 
+    # Command waits 5 seconds for the database to fully initialize before starting Uvicorn
+    command: ["/bin/bash", "-c", "sleep 5 && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
+
+volumes:
+  # Volume dedicated to PostgreSQL data persistence
+  postgres_data:

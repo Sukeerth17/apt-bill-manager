@@ -1,0 +1,20 @@
+# FastAPI and core dependencies
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings  # For modern environment variable handling
+
+# Database: PostgreSQL
+psycopg2-binary
+SQLAlchemy
+
+# Data Processing: For reading Excel (.xlsx) files
+pandas
+openpyxl
+
+# Security and Utilities
+python-jose[cryptography] # JWT handling
+passlib[bcrypt]           # Password hashing (best practice, even if unused)
+pyotp                     # For generating One-Time Passcodes
+python-dotenv             # For reading .env file
+httpx                     # Async client for Telegram/Email API calls
